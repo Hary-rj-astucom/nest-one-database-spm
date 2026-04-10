@@ -333,8 +333,8 @@ export class ExportService {
                     ` Bonjour,\n Le traitement du fichier CSV a été effectué avec succès.\n Les données ont été intégrées et sont désormais disponibles pour exploitation.\n N’hésitez pas à revenir vers moi si vous souhaitez des vérifications complémentaires ou des informations supplémentaires.\n\n Bien cordialement,`
                 );
 
-                // await this.ftp.uploadFile(filePath, `export/ringover/agent/Fichier final SPM - Agent non compile Ringover ${jj}_${mm}.csv`);
-                // await this.ftp.uploadFile(filePathIn, `export/ringover/cdn/Fichier final SPM - TCD (CDN_par_quart_d'heure) ${jj}_${mm}.csv`);
+                await this.ftp.uploadFile(filePath, `export/ringover/agent/Fichier final SPM - Agent non compile Ringover ${jj}_${mm}.csv`);
+                await this.ftp.uploadFile(filePathIn, `export/ringover/cdn/Fichier final SPM - TCD (CDN_par_quart_d'heure) ${jj}_${mm}.csv`);
 
                 await this.email.sendEmailNotification(
                     [],
