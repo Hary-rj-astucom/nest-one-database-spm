@@ -114,6 +114,6 @@ export class Call extends Model<Call> {
   @Column({ type: DataType.STRING(255), allowNull: true })
   DigitEntered?: string | null;
 
-  @Column({ type: DataType.DATE, allowNull: true })
-  Missed?: Date | null;
+  @Column({ type: DataType.STRING(45), allowNull: true })
+  Missed?: string | null;
 }
