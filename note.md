@@ -1,0 +1,1 @@
+npx ts-node src/call/tasks/import-call-auto.task.ts
