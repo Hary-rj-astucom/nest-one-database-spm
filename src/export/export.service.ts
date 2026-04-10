@@ -1,11 +1,6 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { parse } from 'csv-parse/sync';
 import { InjectModel } from '@nestjs/sequelize';
-import { Call } from '../models/call.model';
-import { Client } from '../models/client.model';
-import { EmpowerStats} from '../models/empower-stats.model';
 import { Export, StatusType, ExportTypeEnum } from '../models/export.model';
-import { HistoriqueLecture } from '../models/historique_lecture.model';
 import { EmailService } from '../email/email.service';
 import { FtpService } from '../ftp/ftp.service';
 import * as fs from 'fs';
@@ -19,12 +14,6 @@ export class ExportService {
     private readonly logger = new Logger(ExportService.name);
 
     constructor(
-        @InjectModel(Call)
-        private readonly callModel: typeof Call,
-        @InjectModel(Client)
-        private readonly clientModel: typeof Client,
-        @InjectModel(EmpowerStats)
-        private readonly empowerStatsModel: typeof EmpowerStats,
         @InjectModel(Export)
         private readonly exportModel: typeof Export,
         private readonly sequelize: Sequelize,
