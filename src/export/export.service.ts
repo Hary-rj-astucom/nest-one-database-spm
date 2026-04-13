@@ -86,6 +86,7 @@ export class ExportService {
                         ':00'
                     ) AS time_15min,
                     COUNT(*) AS nb_call,
+                    CASE WHEN clients.client_name IS NULL THEN 'unknown' ELSE clients.client_name END AS client_name,
                     SUM(is_answered) AS call_answer,
                     SUM(NOT is_answered) AS call_missed,
                     SUM(duration) AS total_duration,
@@ -94,9 +95,10 @@ export class ExportService {
                         ROUND(SUM(is_answered)/COUNT(*)*100, 2),
                         '%'
                     ) AS answer_rate
-                FROM \`call\`
+                FROM \`call\` 
+                LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID 
                 WHERE direction = 'in' AND historique_lecture_id = :histoId
-                GROUP BY time_15min`,
+                GROUP BY time_15min, client_name`,
                     { 
                         type: QueryTypes.SELECT,
                         replacements: {
@@ -113,6 +115,7 @@ export class ExportService {
                         ':00'
                     ) AS time_15min,
                     COUNT(*) AS nb_call,
+                    CASE WHEN clients.client_name IS NULL THEN 'unknown' ELSE clients.client_name END AS client_name,
                     SUM(is_answered) AS call_answer,
                     SUM(NOT is_answered) AS call_missed,
                     SUM(duration) AS total_duration,
@@ -121,9 +124,10 @@ export class ExportService {
                         ROUND(SUM(is_answered)/COUNT(*)*100, 2),
                         '%'
                     ) AS answer_rate
-                FROM \`call\`
+                FROM \`call\` 
+                LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID 
                 WHERE direction = 'out' AND historique_lecture_id = :histoId
-                GROUP BY time_15min`,
+                GROUP BY time_15min, client_name`,
                     { 
                         type: QueryTypes.SELECT,
                         replacements: {
