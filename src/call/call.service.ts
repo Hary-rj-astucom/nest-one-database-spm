@@ -104,6 +104,20 @@ export class CallService {
         fs.unlinkSync(sourcePath);
 
         console.log(`Fichier ${fileName} déplacé`);
+        
+      }else{
+        // deplacement du fichier traiter
+        const destinationFolder = path.join(process.cwd(), 'csv-template', 're-processed');
+
+        const sourcePath = path.join(folderPath, fileName);
+        const destinationPath = path.join(destinationFolder, fileName);
+
+        // fs.renameSync(sourcePath, destinationPath);
+
+        fs.copyFileSync(sourcePath, destinationPath);
+        fs.unlinkSync(sourcePath);
+
+        console.log(`Fichier ${fileName} déplacé`);
       }
 
       return result;
