@@ -33,12 +33,6 @@ export class ExportService {
 
         const know = Math.floor(Date.now() / 1000);
 
-        const date = new Date();
-        date.setDate(date.getDate() - 1);
-
-        const jj = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-
         // get historique none exported
         const results = await this.sequelize.query<{ historique_lecture_id: number }>(
             `SELECT DISTINCT(historique_lecture_id) as historique_lecture_id
@@ -161,6 +155,9 @@ export class ExportService {
                     "LastState",
                     "TotalDuration"
                 ];
+
+                const jj = dayjs(allCalls[0].date_start).format('DD');
+                const mm = dayjs(allCalls[0].date_start).format('MM');
 
                 const rows = await allCalls.map(call => [
                     call.call_id,
