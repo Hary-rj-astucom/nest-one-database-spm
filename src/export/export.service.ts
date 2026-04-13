@@ -315,16 +315,16 @@ export class ExportService {
                 // ----------- EMAIL -----------
                 await this.email.sendMultiCsvEmail(
                     [
-                        { filePath, fileName: `Fichier final SPM - Agent non compile Ringover ${jj}_${mm}.csv` },
-                        { filePath: filePathIn, fileName: `Fichier final SPM - TCD (CDN_par_quart_d'heure) ${jj}_${mm}.csv` },
+                        { filePath, fileName: `Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv` },
+                        { filePath: filePathIn, fileName: `Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv` },
                         { filePath: filePathOut, fileName: `Fichier final SPM - TCD OUT (CDN_par_quart_d_heure) ${jj}_${mm}.csv` }
                     ],
                     `Export GLOBAL du ${jj}_${mm}`,
                     ` Bonjour,\n Le traitement du fichier CSV a été effectué avec succès.\n Les données ont été intégrées et sont désormais disponibles pour exploitation.\n N’hésitez pas à revenir vers moi si vous souhaitez des vérifications complémentaires ou des informations supplémentaires.\n\n Bien cordialement,`
                 );
 
-                await this.ftp.uploadFile(filePath, `export/ringover/agent/Fichier final SPM - Agent non compile Ringover ${jj}_${mm}.csv`);
-                await this.ftp.uploadFile(filePathIn, `export/ringover/cdn/Fichier final SPM - TCD (CDN_par_quart_d'heure) ${jj}_${mm}.csv`);
+                await this.ftp.uploadFile(filePath, `export/ringover/agent/Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv`);
+                await this.ftp.uploadFile(filePathIn, `export/ringover/cdn/Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv`);
 
                 await this.email.sendEmailNotification(
                     [],
