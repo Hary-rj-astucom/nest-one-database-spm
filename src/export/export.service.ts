@@ -104,7 +104,7 @@ export class ExportService {
                         ':00'
                     ) AS time_15min,
                     COUNT(*) AS nb_call,
-                    CASE WHEN clients.client_name IS NULL THEN 'unknown' ELSE clients.client_name END AS client_name,
+                    CASE WHEN clients.client_name IS NULL THEN '' ELSE clients.client_name END AS client_name,
                     SUM(is_answered) AS call_answer,
                     SUM(NOT is_answered) AS call_missed,
                     SUM(duration) AS total_duration,
@@ -135,7 +135,7 @@ export class ExportService {
                         ':00'
                     ) AS time_15min,
                     COUNT(*) AS nb_call,
-                    CASE WHEN clients.client_name IS NULL THEN 'unknown' ELSE clients.client_name END AS client_name,
+                    CASE WHEN clients.client_name IS NULL THEN '' ELSE clients.client_name END AS client_name,
                     SUM(is_answered) AS call_answer,
                     SUM(NOT is_answered) AS call_missed,
                     SUM(duration) AS total_duration,
