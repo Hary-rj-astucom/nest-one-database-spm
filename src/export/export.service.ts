@@ -56,10 +56,6 @@ export class ExportService {
 
                 // --- avoir tous les stats des call ---
 
-                // const allCalls = await this.callModel.findAll({
-                //     where: { historique_lecture_id: histoId }
-                // });
-
                 const allCalls = await this.sequelize.query<any>(
                 `SELECT
                     \`call\`.*, 
@@ -69,7 +65,29 @@ export class ExportService {
                     END AS client_name
                 FROM \`call\` 
                 LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID
-                WHERE historique_lecture_id = :histoId`,
+                WHERE direction = 'in' AND historique_lecture_id = :histoId
+                ORDER BY \`call\`.date_start ASC
+                `,
+                    { 
+                        type: QueryTypes.SELECT,
+                        replacements: {
+                            histoId: histoId
+                        }
+                    },
+                );
+
+                const allCallsOut = await this.sequelize.query<any>(
+                `SELECT
+                    \`call\`.*, 
+                    CASE 
+                        WHEN clients.client_name IS NULL OR clients.client_name = '' THEN 'unknown' 
+                        ELSE clients.client_name
+                    END AS client_name
+                FROM \`call\` 
+                LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID
+                WHERE direction = 'out' AND historique_lecture_id = :histoId 
+                ORDER BY \`call\`.date_start ASC
+                `,
                     { 
                         type: QueryTypes.SELECT,
                         replacements: {
@@ -98,7 +116,9 @@ export class ExportService {
                 FROM \`call\` 
                 LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID 
                 WHERE direction = 'in' AND historique_lecture_id = :histoId
-                GROUP BY time_15min, client_name`,
+                GROUP BY time_15min, client_name 
+                ORDER BY time_15min ASC
+                `,
                     { 
                         type: QueryTypes.SELECT,
                         replacements: {
@@ -127,7 +147,9 @@ export class ExportService {
                 FROM \`call\` 
                 LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID 
                 WHERE direction = 'out' AND historique_lecture_id = :histoId
-                GROUP BY time_15min, client_name`,
+                GROUP BY time_15min, client_name 
+                ORDER BY time_15min ASC
+                `,
                     { 
                         type: QueryTypes.SELECT,
                         replacements: {
@@ -185,6 +207,29 @@ export class ExportService {
                 const filePath = path.join(exportDir, `Fichier_final_SPM_-_Agent_non_compile_Ringover_${jj}_${mm}_${know}.csv`);
                 await fs.writeFileSync(filePath, csv);
 
+                // ---------- CSV CALL OUT -----------
+                const rows2 = await allCallsOut.map(call => [
+                    call.call_id,
+                    formatDate(call.date_start),
+                    formatDate(call.date_answer),
+                    // dayjs(call.date_start).format('DD/MM/YYYY HH:mm:ss'),
+                    // dayjs(call.date_answer).format('DD/MM/YYYY HH:mm:ss'),
+                    call.user_id,
+                    call.user_name,
+                    call.from_number,
+                    call.to_number,
+                    call.client_name,
+                    call.direction,
+                    call.is_answered != null && call.is_answered == 1 ? "TRUE" : "FALSE",
+                    call.last_state,
+                    call.duration
+                ]);
+
+                const csv2 = [header.join(','), ...rows2.map(r => r.join(','))].join('\n');
+
+                const filePathAllOut = path.join(exportDir, `Fichier_final_SPM_-_Agent_non_compile_Ringover_OUT_${jj}_${mm}_${know}.csv`);
+                await fs.writeFileSync(filePathAllOut, csv2);
+
                 // ----------- CSV CALL IN -----------
 
                 const rowsIn = await allCallInStats.map(r => [
@@ -195,8 +240,8 @@ export class ExportService {
                     r.call_answer,
                     r.call_missed,
                     r.total_duration,
-                    r.avg_duration,
-                    '"' + r.answer_rate + '"'
+                    Math.round(r.avg_duration),
+                    '"' + (r.answer_rate).replace('.', ',') + '"'
                 ]);
 
                 const totalsIn = await allCallInStats.reduce((acc, r) => {
@@ -214,12 +259,12 @@ export class ExportService {
                 });
                 // Moyenne durée
                 totalsIn.avg_duration = totalsIn.nb_call
-                    ? (totalsIn.total_duration / totalsIn.nb_call).toFixed(2)
+                    ? Math.round(totalsIn.total_duration / totalsIn.nb_call)
                     : 0;
 
                 // Taux de réponse
                 totalsIn.answer_rate = totalsIn.nb_call
-                    ? ((totalsIn.call_answer / totalsIn.nb_call) * 100).toFixed(2).replace('.', ',') + '%'
+                    ? await ((totalsIn.call_answer / totalsIn.nb_call) * 100).toFixed(2).replace('.', ',') + '%'
                     : '0,00%';
 
                 const totalRowIn = [
@@ -253,8 +298,8 @@ export class ExportService {
                     r.call_answer,
                     r.call_missed,
                     r.total_duration,
-                    r.avg_duration,
-                    '"' + r.answer_rate + '"'
+                    Math.round(r.avg_duration),
+                    '"' + (r.answer_rate).replace('.', ',') + '"'
                 ]);
 
                 const totalsOut = await allCallOutStats.reduce((acc, r) => {
@@ -272,7 +317,7 @@ export class ExportService {
                 });
                 // Moyenne durée
                 totalsOut.avg_duration = totalsOut.nb_call
-                    ? (totalsOut.total_duration / totalsOut.nb_call).toFixed(2)
+                    ? Math.round(totalsOut.total_duration / totalsOut.nb_call)
                     : 0;
 
                 // Taux de réponse
@@ -306,7 +351,7 @@ export class ExportService {
                 // save the export operation
                 await this.exportModel.create({
                     export_type: ExportTypeEnum.csv_stats,
-                    file_path: `/csv-exported/ALL/Fichier_final_SPM_-_Agent_non_compile_Ringover_${jj}_${mm}_${know}.csv, /csv-exported/ALL/Fichier_final_SPM_-_TCD_(CDN_par_quart_d_heure)_${jj}_${mm}_${know}.csv, /csv-exported/ALL/Fichier_final_SPM_-_TCD_OUT_(CDN_par_quart_d_heure)_${jj}_${mm}_${know}.csv`,
+                    file_path: `/csv-exported/ALL/Fichier_final_SPM_-_Agent_non_compile_Ringover_${jj}_${mm}_${know}.csv, /csv-exported/ALL/Fichier_final_SPM_-_TCD_(CDN_par_quart_d_heure)_${jj}_${mm}_${know}.csv, /csv-exported/ALL/Fichier_final_SPM_-_Agent_non_compile_OUT_Ringover_${jj}_${mm}_${know}.csv, /csv-exported/ALL/Fichier_final_SPM_-_TCD_OUT_(CDN_par_quart_d_heure)_${jj}_${mm}_${know}.csv`,
                     status: StatusType.success,
                     error_message: null,
                     historique_lecture_id: histoId
@@ -317,6 +362,7 @@ export class ExportService {
                     [
                         { filePath, fileName: `Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv` },
                         { filePath: filePathIn, fileName: `Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv` },
+                        { filePath: filePathAllOut, fileName: `Fichier final SPM - Agent non compilé OUT Ringover ${jj}_${mm}.csv` },
                         { filePath: filePathOut, fileName: `Fichier final SPM - TCD OUT (CDN_par_quart_d_heure) ${jj}_${mm}.csv` }
                     ],
                     `Export GLOBAL du ${jj}_${mm}`,
@@ -326,10 +372,10 @@ export class ExportService {
                 await this.ftp.uploadFile(filePath, `export/ringover/agent/Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv`);
                 await this.ftp.uploadFile(filePathIn, `export/ringover/cdn/Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv`);
 
-                await this.email.sendEmailNotification(
+                await this.email.sendMultiCsvEmail(
                     [],
                     `Envoie ftp reussi`,
-                    ` Bonjour,\n Le traitement du fichier CSV a été effectué avec succès.\n\n Les fichiers générés ont été envoyés :\n - export/ringover/agent/Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv\n - export/ringover/cdn/Fichier final SPM - TCD (CDN_par_quart_d'heure) ${jj}_${mm}.csv\n\n Les données sont désormais disponibles pour exploitation.\n\n Bien cordialement
+                    ` Bonjour,\n Le traitement du fichier CSV a été effectué avec succès.\n\n Les fichiers générés ont été envoyés :\n - export/ringover/agent/Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv\n - export/ringover/cdn/Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv\n\n Les données sont désormais disponibles pour exploitation.\n\n Bien cordialement
                     `
                 );
 
