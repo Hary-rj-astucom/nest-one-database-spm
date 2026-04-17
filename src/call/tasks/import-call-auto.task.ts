@@ -7,11 +7,11 @@ async function bootstrap() {
 
   const app = await NestFactory.createApplicationContext(AppModule);
 
-  const callService = app.get(CallService);
+  const callService = await app.get(CallService);
 
   await callService.processCallsAuto();
 
-  const exportService = app.get(ExportService);
+  const exportService = await app.get(ExportService);
 
   await exportService.exportAutoAllInOne();
 

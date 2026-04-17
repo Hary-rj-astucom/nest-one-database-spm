@@ -71,7 +71,7 @@ export class CallService {
   async processCallsAuto(): Promise<any> {
 
     const folderPath = path.join(process.cwd(), 'csv-template', 'new');
-    const files = fs.readdirSync(folderPath);
+    const files = await fs.readdirSync(folderPath);
 
     if (files.length === 0) {
       throw new Error('Aucun fichier CSV trouvé : ' + folderPath);
@@ -79,7 +79,7 @@ export class CallService {
 
     const fileName = files[0];
     const filePath = path.join(folderPath, fileName);
-    const buffer = fs.readFileSync(filePath);
+    const buffer = await fs.readFileSync(filePath);
 
     await this.email.sendEmailNotification(
         [],
@@ -466,9 +466,21 @@ export class CallService {
   // ─── Parse a date string ─────────────────────────────
   private parseDate(dateStr: string): string | null {
     if (!dateStr?.trim()) return null;
-    // const d = new Date(dateStr);
-    // return isNaN(d.getTime()) ? null : d;
-    return dateStr?.trim();
+
+    const [datePart, timePart] = dateStr.trim().split(' ');
+    if (!datePart || !timePart) return null;
+
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+
+    if ([year, month, day, hours, minutes, seconds].some(isNaN)) return null;
+
+    // Use Date to handle midnight overflow automatically
+    const d = new Date(year, month - 1, day, hours + 2, minutes, seconds);
+    if (isNaN(d.getTime())) return null;
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
   // ─── Clean string value ─────────────────────────────
