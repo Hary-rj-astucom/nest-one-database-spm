@@ -27,7 +27,7 @@ export class ExportService {
 
         const formatDate = (d) => {
             return d && dayjs(d).isValid()
-                ? dayjs(d).format('DD/MM/YYYY HH:mm:ss')
+                ? dayjs(d).format('YYYY-MM-DD HH:mm:ss')
                 : '';
         };
 
