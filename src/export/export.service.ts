@@ -65,7 +65,7 @@ export class ExportService {
                     END AS client_name
                 FROM \`call\` 
                 LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID
-                WHERE direction = 'in' AND historique_lecture_id = :histoId
+                WHERE historique_lecture_id = :histoId
                 ORDER BY \`call\`.date_start ASC
                 `,
                     { 
@@ -76,25 +76,25 @@ export class ExportService {
                     },
                 );
 
-                const allCallsOut = await this.sequelize.query<any>(
-                `SELECT
-                    \`call\`.*, 
-                    CASE 
-                        WHEN clients.client_name IS NULL OR clients.client_name = '' THEN 'unknown' 
-                        ELSE clients.client_name
-                    END AS client_name
-                FROM \`call\` 
-                LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID
-                WHERE direction = 'out' AND historique_lecture_id = :histoId 
-                ORDER BY \`call\`.date_start ASC
-                `,
-                    { 
-                        type: QueryTypes.SELECT,
-                        replacements: {
-                            histoId: histoId
-                        }
-                    },
-                );
+                // const allCallsOut = await this.sequelize.query<any>(
+                // `SELECT
+                //     \`call\`.*, 
+                //     CASE 
+                //         WHEN clients.client_name IS NULL OR clients.client_name = '' THEN 'unknown' 
+                //         ELSE clients.client_name
+                //     END AS client_name
+                // FROM \`call\` 
+                // LEFT JOIN clients ON clients.ivr_id = \`call\`.IVRID
+                // WHERE direction = 'out' AND historique_lecture_id = :histoId 
+                // ORDER BY \`call\`.date_start ASC
+                // `,
+                //     { 
+                //         type: QueryTypes.SELECT,
+                //         replacements: {
+                //             histoId: histoId
+                //         }
+                //     },
+                // );
 
                 const allCallInStats = await this.sequelize.query<any>(
                 `SELECT
@@ -208,27 +208,27 @@ export class ExportService {
                 await fs.writeFileSync(filePath, csv);
 
                 // ---------- CSV CALL OUT -----------
-                const rows2 = await allCallsOut.map(call => [
-                    call.call_id,
-                    formatDate(call.date_start),
-                    formatDate(call.date_answer),
-                    // dayjs(call.date_start).format('DD/MM/YYYY HH:mm:ss'),
-                    // dayjs(call.date_answer).format('DD/MM/YYYY HH:mm:ss'),
-                    call.user_id,
-                    call.user_name,
-                    call.from_number,
-                    call.to_number,
-                    call.client_name,
-                    call.direction,
-                    call.is_answered != null && call.is_answered == 1 ? "TRUE" : "FALSE",
-                    call.last_state,
-                    call.duration
-                ]);
+                // const rows2 = await allCallsOut.map(call => [
+                //     call.call_id,
+                //     formatDate(call.date_start),
+                //     formatDate(call.date_answer),
+                //     // dayjs(call.date_start).format('DD/MM/YYYY HH:mm:ss'),
+                //     // dayjs(call.date_answer).format('DD/MM/YYYY HH:mm:ss'),
+                //     call.user_id,
+                //     call.user_name,
+                //     call.from_number,
+                //     call.to_number,
+                //     call.client_name,
+                //     call.direction,
+                //     call.is_answered != null && call.is_answered == 1 ? "TRUE" : "FALSE",
+                //     call.last_state,
+                //     call.duration
+                // ]);
 
-                const csv2 = [header.join(','), ...rows2.map(r => r.join(','))].join('\n');
+                // const csv2 = [header.join(','), ...rows2.map(r => r.join(','))].join('\n');
 
-                const filePathAllOut = path.join(exportDir, `Fichier_final_SPM_-_Agent_non_compile_Ringover_OUT_${jj}_${mm}_${know}.csv`);
-                await fs.writeFileSync(filePathAllOut, csv2);
+                // const filePathAllOut = path.join(exportDir, `Fichier_final_SPM_-_Agent_non_compile_Ringover_OUT_${jj}_${mm}_${know}.csv`);
+                // await fs.writeFileSync(filePathAllOut, csv2);
 
                 // ----------- CSV CALL IN -----------
 
@@ -362,7 +362,7 @@ export class ExportService {
                     [
                         { filePath, fileName: `Fichier final SPM - Agent non compilé Ringover ${jj}_${mm}.csv` },
                         { filePath: filePathIn, fileName: `Fichier final SPM - TCD (CDN par quart d'heure) ${jj}_${mm}.csv` },
-                        { filePath: filePathAllOut, fileName: `Fichier final SPM - Agent non compilé OUT Ringover ${jj}_${mm}.csv` },
+                        // { filePath: filePathAllOut, fileName: `Fichier final SPM - Agent non compilé OUT Ringover ${jj}_${mm}.csv` },
                         { filePath: filePathOut, fileName: `Fichier final SPM - TCD OUT (CDN_par_quart_d_heure) ${jj}_${mm}.csv` }
                     ],
                     `Export GLOBAL du ${jj}_${mm}`,
