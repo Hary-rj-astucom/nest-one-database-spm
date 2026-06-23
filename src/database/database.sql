@@ -54,7 +54,7 @@ CREATE TABLE `call` (
 CREATE TABLE empower_stats (
   empower_id INT AUTO_INCREMENT PRIMARY KEY,
   call_uuid VARCHAR(255),
-  call_id VARCHAR(255) UNIQUE,
+  call_id VARCHAR(191) UNIQUE,
   score_global FLOAT,
   customer_sentiment VARCHAR(255),
   moments JSON,

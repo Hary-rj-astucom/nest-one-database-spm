@@ -70,7 +70,7 @@ export class CallService {
   //start auto importation
   async processCallsAuto(): Promise<any> {
 
-    const folderPath = path.join(process.cwd(), 'csv-template', 'new');
+    const folderPath = await path.join(process.cwd(), 'csv-template', 'new');
     const files = await fs.readdirSync(folderPath);
 
     if (files.length === 0) {
@@ -78,7 +78,7 @@ export class CallService {
     }
 
     const fileName = files[0];
-    const filePath = path.join(folderPath, fileName);
+    const filePath = await path.join(folderPath, fileName);
     const buffer = await fs.readFileSync(filePath);
 
     await this.email.sendEmailNotification(
@@ -435,7 +435,7 @@ export class CallService {
             }
           } catch (error) {
             this.logger.error(
-              `Ringover API error for call_id ${row.CallID} - ${error.message}`,
+              `Ringover API error for call_id ${row.CallID} - ${(error as Error).message}`,
             );
           }
 

@@ -99,7 +99,17 @@ export class EmailService {
                         emailAddress: {
                             address: "dev@spmservices.fr"
                         }
-                    }
+                    },
+                    {
+                        emailAddress: {
+                            address: "jpanier@spmservices.fr"
+                        }
+                    },
+                    {
+                        emailAddress: {
+                            address: "mra@spmservices.fr"
+                        }
+                    },
                 ],
                 attachments: formattedAttachments
             }
